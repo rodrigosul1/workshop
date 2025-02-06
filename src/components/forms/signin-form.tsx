@@ -8,11 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { InputFormField } from "../ui/form-field";
+import { Form } from "../ui/form";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useSignIn } from "@/hooks/auth/use-sigin";
+import { useRouter } from "next/navigation";
 
 const signinFormSchema = z.object({
   username: z.string().min(1, { message: "Nome de usuário é obrigatório" }),
@@ -22,6 +26,15 @@ const signinFormSchema = z.object({
 type SigninFormValues = z.infer<typeof signinFormSchema>;
 
 export function SignInForm() {
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+
+  const { mutate: signin, isPending } = useSignIn({
+    onSuccess: () => {
+      router.push("/");
+    },
+  });
+
   const form = useForm<SigninFormValues>({
     resolver: zodResolver(signinFormSchema),
     defaultValues: {
@@ -29,6 +42,10 @@ export function SignInForm() {
       password: "",
     },
   });
+
+  function handleSignIn(data: SigninFormValues) {
+    signin(data);
+  }
 
   return (
     <Card>
@@ -39,30 +56,42 @@ export function SignInForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="username">Usuário</Label>
-              <Input id="username" type="text" required />
-            </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSignIn)}>
+            <div className="flex flex-col gap-6">
+              <InputFormField
+                control={form.control}
+                name="username"
+                label="Usuário"
+              />
 
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Senha</Label>
-                <a
-                  href="#"
-                  className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+              <div className="relative">
+                <InputFormField
+                  control={form.control}
+                  name="password"
+                  label="Senha"
+                  type={showPassword ? "text" : "password"}
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 bottom-0 h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground duration-200"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  Esqueceu sua senha?
-                </a>
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
-              <Input id="password" type="password" required />
+
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                Entrar
+              </Button>
             </div>
-            <Button type="submit" className="w-full">
-              Entrar
-            </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

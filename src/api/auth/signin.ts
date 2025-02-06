@@ -1,5 +1,7 @@
+"use server";
+
 import { z } from "zod";
-import * as argon2 from 'argon2'
+import * as argon2 from "argon2";
 import { createSession } from "./session";
 
 const signinSchema = z.object({
@@ -13,7 +15,8 @@ const users = [
   {
     id: "1",
     username: "admin",
-    password: "admin",
+    password:
+      "$argon2id$v=19$m=65536,t=3,p=4$sSCIUgHmMNWva6prAxszIg$gktafde8cnYa1k1q7YAK9wZrjKzVF21WdpAATHoUyvI",
   },
 ];
 
